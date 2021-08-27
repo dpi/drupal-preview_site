@@ -208,7 +208,13 @@ class TomeGenerator extends GeneratePluginBase {
 
     try {
       $collection = new FileCollection(FileHelper::createFromExistingFile($destination));
-      foreach ($copied_paths as $copied_path) {
+      foreach (array_unique($copied_paths) as $copied_path) {
+        // Remove any relative slashes (./) but retain ../.
+        $copied_path = preg_replace('@(?<!\.)\./@', '', $copied_path);
+        if ($build->hasPathBeenProcessed($copied_path)) {
+          continue;
+        }
+        $build->markPathAsProcessed($copied_path);
         $collection->addFile(FileHelper::createFromExistingFile($copied_path));
       }
       return $collection;
