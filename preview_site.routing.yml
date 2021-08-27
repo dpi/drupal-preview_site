@@ -1,0 +1,7 @@
+preview_site.overview:
+  path: '/admin/structure/preview-site'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Preview site'
+  requirements:
+    _permission: 'administer preview_site builds+administer preview_site strategies'

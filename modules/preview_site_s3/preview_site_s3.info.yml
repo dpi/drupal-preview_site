@@ -1,0 +1,7 @@
+name: Preview site S3
+description: 'Provides a preview site deployment plugin for s3'
+core_version_requirement: ^8.8 || ~9.0
+type: module
+dependencies:
+  - preview_site:preview_site
+  - token:token

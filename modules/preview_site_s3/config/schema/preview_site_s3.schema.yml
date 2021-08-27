@@ -1,0 +1,25 @@
+preview_site.strategy.deploy_settings.preview_site_s3:
+  type: mapping
+  label: 'S3 Settings'
+  mapping:
+    bucket:
+      type: string
+      label: 'Bucket'
+    key:
+      type: string
+      label: 'Key'
+    secret:
+      type: string
+      label: 'Secret'
+    naming:
+      type: string
+      label: 'Naming'
+    region:
+      type: string
+      label: 'Region'
+    domain:
+      type: string
+      label: 'Domain'
+    max_age:
+      type: integer
+      label: 'Max age'

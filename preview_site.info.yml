@@ -1,0 +1,10 @@
+name: Preview Site
+description: 'Provides preview site functionality'
+core_version_requirement: ^8.8 || ~9.0
+type: module
+dependencies:
+  - dynamic_entity_reference:dynamic_entity_reference
+  - drupal:file
+  - drupal:datetime
+  - tome:tome_static
+  - entity_usage:entity_usage

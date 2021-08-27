@@ -1,0 +1,11 @@
+entity.preview_site_strategy.add_form:
+  route_name: entity.preview_site_strategy.add_form
+  title: 'Add preview strategy'
+  appears_on:
+    - 'entity.preview_site_strategy.collection'
+
+entity.preview_site_build.add_page:
+  route_name: entity.preview_site_build.add_page
+  title: 'Add preview site build'
+  appears_on:
+    - 'entity.preview_site_build.collection'

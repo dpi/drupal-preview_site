@@ -1,0 +1,17 @@
+preview_site.preview_site_overview:
+  title: 'Preview sites'
+  route_name: preview_site.overview
+  parent: system.admin_structure
+  description: 'Manage preview site builds and strategies.'
+
+entity.preview_site_strategy.collection:
+  title: 'Preview site strategies'
+  route_name: entity.preview_site_strategy.collection
+  parent: preview_site.preview_site_overview
+  description: 'Manage preview site strategies.'
+
+entity.preview_site_build.collection:
+  title: 'Preview site builds'
+  route_name: entity.preview_site_build.collection
+  parent: preview_site.preview_site_overview
+  description: 'Manage preview site builds.'

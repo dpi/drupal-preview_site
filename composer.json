@@ -1,0 +1,23 @@
+{
+    "name": "drupal/preview_site",
+    "description": "Provides the ability to create preview sites from content",
+    "minimum-stability": "stable",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "larowlan",
+            "email": "larowlan@395439.no-reply.drupal.org"
+        }
+    ],
+    "require": {
+        "drupal/dynamic_entity_reference": "~1 || ~2",
+        "drupal/entity_usage": "~2",
+        "drupal/tome": "~1"
+    },
+    "require-dev": {
+        "drupal/entity_embed": "~1",
+        "drupal/paragraphs": "^1.9",
+        "symfony/dom-crawler": "~4 || ~5",
+        "drupal/token": "~1"
+    }
+}

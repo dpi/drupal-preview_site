@@ -1,0 +1,7 @@
+administer preview_site strategies:
+  title: 'Administer preview site strategies'
+  description: 'Create and edit preview site strategies'
+
+administer preview_site builds:
+  title: 'Administer preview site builds'
+  description: 'Create and edit preview site builds'

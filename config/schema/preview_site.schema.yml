@@ -1,0 +1,22 @@
+preview_site.strategy.*:
+  type: config_entity
+  label: 'Preview site strategy'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    deploy:
+      type: string
+      label: 'Deploy plugin ID'
+    generate:
+      type: string
+      label: 'Generate plugin ID'
+    deploySettings:
+      type: 'preview_site.strategy.deploy_settings.[%parent.deploy]'
+      label: 'Deploy settings'
+    generateSettings:
+      type: 'preview_site.strategy.generate_settings.[%parent.generate]'
+      label: 'Generate settings'

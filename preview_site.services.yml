@@ -1,0 +1,29 @@
+services:
+  plugin.manager.preview_site_deploy:
+    class: Drupal\preview_site\Deploy\DeployPluginManager
+    parent: default_plugin_manager
+  plugin.manager.preview_site_generate:
+    class: Drupal\preview_site\Generate\GeneratePluginManager
+    parent: default_plugin_manager
+  preview_site.tome_static:
+    class: Drupal\preview_site\Generate\TomeStaticExtension
+    arguments:
+      - '@http_kernel'
+      - '@request_stack'
+      - '@event_dispatcher'
+      - '@cache.tome_static'
+      - '@account_switcher'
+      - '@file_system'
+  preview_site.tome_file_saved_listener:
+    class: Drupal\preview_site\EventSubscribers\TomeStaticListener
+    arguments:
+      - '@entity_type.manager'
+    tags:
+      - {name: event_subscriber}
+  cache_context.preview_site:
+    class: Drupal\preview_site\PreviewSiteCacheContext
+    arguments:
+      - '@state'
+      - '@entity.repository'
+    tags:
+      - { name: cache.context }

@@ -1,0 +1,7 @@
+preview_site.strategy.deploy_settings.test:
+  type: mapping
+  label: 'Settings'
+  mapping:
+    prefix:
+      type: string
+      label: 'Prefix'

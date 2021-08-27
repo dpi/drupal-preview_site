@@ -1,0 +1,7 @@
+name: Preview site test
+description: 'Provides test plugins for preview site'
+core_version_requirement: ^8.8 || ~9.0
+type: module
+dependencies:
+  - preview_site:preview_site
+  - block_content:block_content

@@ -1,0 +1,103 @@
+<?php
+
+/**
+ * @file
+ * Contains main module functions.
+ */
+
+use Drupal\Core\Access\AccessResultNeutral;
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Database\Query\AlterableInterface;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
+use Drupal\preview_site\Entity\PreviewSiteBuildInterface;
+use Drupal\preview_site\EntityHandlers\ParentNegotiation\DefaultParentNegotiation;
+use Drupal\preview_site\EntityHandlers\ParentNegotiation\ParagraphParentNegotiation;
+use Drupal\preview_site\Generate\GeneratePluginInterface;
+use Drupal\preview_site\PreviewSiteBuilder;
+
+/**
+ * Implements hook_entity_preload().
+ */
+function preview_site_entity_preload(array $ids, $entity_type_id) {
+  // Let generate plugins have a say in entity pre-loading if we're viewing an
+  // entity in the context of a site being built.
+  if ($entity_type_id === 'preview_site_build') {
+    return [];
+  }
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $entity_type = $entity_type_manager->getDefinition($entity_type_id);
+  if (!$entity_type->entityClassImplements(ContentEntityInterface::class)) {
+    return [];
+  }
+  if (($build = PreviewSiteBuilder::factory()->getRunningBuild()) && $generate = $build->getGeneratePlugin()) {
+    return $generate->entityPreload($build, $ids, $entity_type_id, $entity_type_manager);
+  }
+  return [];
+}
+
+/**
+ * Implements hook_entity_access().
+ */
+function preview_site_entity_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  if ($operation !== 'view' || !($entity instanceof ContentEntityInterface)) {
+    return new AccessResultNeutral();
+  }
+  if (($build = PreviewSiteBuilder::factory()->getRunningBuild()) && $generate = $build->getGeneratePlugin()) {
+    // We set the cache max age to be zero here so this doesn't end up being
+    // cached for normal operations.
+    /** @var \Drupal\preview_site\Generate\GeneratePluginInterface $generate */
+    return $generate->entityAccess($build, $entity, $account, \Drupal::entityTypeManager())->addCacheContexts(['preview_site'])->setCacheMaxAge(0);
+  }
+  return new AccessResultNeutral();
+}
+
+/**
+ * Implements hook_query_alter().
+ */
+function preview_site_query_alter(AlterableInterface $query) {
+  if (!($entity_type_id = $query->getMetaData('entity_type'))) {
+    return;
+  }
+  if ($entity_type_id === 'preview_site_build') {
+    // Ignore the build entity.
+    return;
+  }
+  if (($build = PreviewSiteBuilder::factory()->getRunningBuild()) && $generate = $build->getGeneratePlugin()) {
+    $generate->entityQueryAlter($build, $query, \Drupal::entityTypeManager()->getDefinition($entity_type_id));
+  }
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ */
+function preview_site_entity_type_alter(array &$entity_types) {
+  if (array_key_exists('paragraph', $entity_types)) {
+    $entity_types['paragraph']->setHandlerClass(GeneratePluginInterface::PARENT_NEGOTIATION_HANDLER, ParagraphParentNegotiation::class);
+  }
+  foreach ($entity_types as $entity_type) {
+    if (!$entity_type->hasHandlerClass(GeneratePluginInterface::PARENT_NEGOTIATION_HANDLER)) {
+      $entity_type->setHandlerClass(GeneratePluginInterface::PARENT_NEGOTIATION_HANDLER, DefaultParentNegotiation::class);
+    }
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function preview_site_cron() {
+  $time = new \DateTime('@' . \Drupal::service('datetime.time')->getCurrentTime(), new \DateTimeZone('UTC'));
+  $ids = \Drupal::entityTypeManager()->getStorage('preview_site_build')
+    ->getQuery()
+    ->condition('status', PreviewSiteBuildInterface::STATUS_DECOMMISSIONED, '<>')
+    ->condition('expiry_date', $time->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT), '<=')
+    ->execute();
+  if (!$ids) {
+    return;
+  }
+  $queue = \Drupal::queue('preview_site_decommission');
+  foreach ($ids as $id) {
+    $queue->createItem($id);
+  }
+}

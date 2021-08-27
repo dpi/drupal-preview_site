@@ -1,0 +1,61 @@
+<?php
+
+namespace Drupal\preview_site\Plugin\QueueWorker;
+
+/**
+ * Defines a queue worker plugin for deployments.
+ *
+ * @QueueWorker(
+ *   id = "preview_site_assets",
+ *   title = @Translation("Asset generation worker"),
+ *   deriver = \Drupal\preview_site\Plugin\Derivative\PreviewSiteBuildQueueWorkerDeriver::class,
+ * )
+ */
+class GenerateAssets extends Generate {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function processItem($path) {
+    /** @var \Drupal\preview_site\Entity\PreviewSiteBuildInterface $build */
+    $build = $this->entityTypeManager->getStorage('preview_site_build')->load($this->pluginDefinition['preview_site_build_id']);
+    $needs_save = FALSE;
+    $strategy = $build->getStrategy();
+    if (!$strategy) {
+      // This could only occur if the strategy was deleted but the queue was
+      // populated. In this scenario, we assume there's nothing to do.
+      $message = sprintf('Preview site build %s (%d) is not associated with a build strategy.', $build->label(), $build->id());
+      $build->addLogEntry($message);
+      $this->log->error($message);
+      return;
+    }
+    $deploy = $strategy->getDeployPlugin();
+    if (!$deploy) {
+      // This could only occur if the strategy was misconfigured.
+      $message = sprintf('Preview site build %s (%d) is configured to use the %s strategy, but the deploy plugin for that strategy is not configured.', $build->label(), $build->id(), $strategy->label());
+      $build->addLogEntry($message);
+      $this->log->error($message);
+      return;
+    }
+    $base_uri = $deploy->getDeploymentBaseUri($build);
+    if (!$base_uri) {
+      // The deploy plugin is not correctly configured.
+      // Log and continue.
+      $message = sprintf('Preview site build %s (%d) is configured to use the %s strategy, but the %s deploy plugin did not provide a base URL for deployment.', $build->label(), $build->id(), $strategy->label(), $strategy->getDeployPluginId());
+      $build->addLogEntry($message);
+      $this->log->error($message);
+      return;
+    }
+    if ($collection = $strategy->getGeneratePlugin()->generateBuildForPath($build, $path, $base_uri, $this->queueFactory->get('preview_site_assets:' . $build->id()))) {
+      // Store build artifacts.
+      foreach ($collection as $file) {
+        $build->addArtifact($file, FALSE);
+        $needs_save = TRUE;
+      }
+    }
+    if ($needs_save) {
+      $build->save();
+    }
+  }
+
+}

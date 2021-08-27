@@ -1,0 +1,21 @@
+entity.preview_site_build.canonical:
+  route_name: entity.preview_site_build.canonical
+  base_route: entity.preview_site_build.canonical
+  title: 'View'
+entity.preview_site_build.edit_form:
+  route_name: entity.preview_site_build.edit_form
+  base_route: entity.preview_site_build.canonical
+  title: Edit
+entity.preview_site_build.deploy_form:
+  route_name: entity.preview_site_build.deploy_form
+  base_route: entity.preview_site_build.canonical
+  title: Deploy
+entity.preview_site_build.delete_form:
+  route_name: entity.preview_site_build.delete_form
+  base_route: entity.preview_site_build.canonical
+  title: Delete
+  weight: 10
+entity.preview_site_strategy.edit_form:
+  title: 'Edit'
+  route_name: entity.preview_site_strategy.edit_form
+  base_route: entity.preview_site_strategy.edit_form
