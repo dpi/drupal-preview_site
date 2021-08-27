@@ -8,7 +8,7 @@ use Drupal\Core\Database\Query\AlterableInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItemInterface;
+use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 use Drupal\Core\Queue\QueueInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\preview_site\Entity\PreviewSiteBuildInterface;
@@ -110,7 +110,7 @@ class TomeGenerator extends GeneratePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function generateBuildForItem(PreviewSiteBuildInterface $build, EntityReferenceItemInterface $item, string $base_url, QueueInterface $asset_queue): FileCollection {
+  public function generateBuildForItem(PreviewSiteBuildInterface $build, EntityReferenceItem $item, string $base_url, QueueInterface $asset_queue): FileCollection {
     // We don't load the content entity yet, so that loading occurs in the scope
     // of the tome-generation.
     $path = sprintf('_entity:%s:%s:%s', $item->target_type, $build->language()->getId(), $item->target_id);

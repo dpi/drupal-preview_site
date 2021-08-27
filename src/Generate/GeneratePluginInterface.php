@@ -10,7 +10,7 @@ use Drupal\Core\Database\Query\AlterableInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItemInterface;
+use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 use Drupal\Core\Plugin\PluginWithFormsInterface;
@@ -38,7 +38,7 @@ interface GeneratePluginInterface extends ConfigurableInterface, PluginInspectio
    *
    * @param \Drupal\preview_site\Entity\PreviewSiteBuildInterface $build
    *   The build to generate.
-   * @param \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItemInterface $item
+   * @param \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem $item
    *   The item being built.
    * @param string $base_url
    *   Base URL.
@@ -48,7 +48,7 @@ interface GeneratePluginInterface extends ConfigurableInterface, PluginInspectio
    * @return \Drupal\preview_site\Generate\FileCollection
    *   Artifact files generated during the build.
    */
-  public function generateBuildForItem(PreviewSiteBuildInterface $build, EntityReferenceItemInterface $item, string $base_url, QueueInterface $asset_queue) : FileCollection;
+  public function generateBuildForItem(PreviewSiteBuildInterface $build, EntityReferenceItem $item, string $base_url, QueueInterface $asset_queue) : FileCollection;
 
   /**
    * Prepares for generating a build.
