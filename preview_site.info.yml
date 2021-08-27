@@ -8,3 +8,5 @@ dependencies:
   - drupal:datetime
   - tome:tome_static
   - entity_usage:entity_usage
+test_dependencies:
+  - s3client:s3client
