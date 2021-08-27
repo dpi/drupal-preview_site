@@ -163,8 +163,6 @@ class PreviewSiteBuildEntityTest extends PreviewSiteKernelTestBase {
     $this->assertEquals($build->uuid(), $state->get(PreviewSiteBuildInterface::BUILDING_STATE_KEY));
     $this->assertTrue($state->get(TestGenerate::PREPARE_STEP));
     $this->assertEquals([$file->id()], $file_ids);
-    $file = File::load($file->id());
-    $this->assertEquals(0, $file->status->value);
 
     $this->expectException(GenerationInProgressException::class);
     $build->startDeployment($state);
