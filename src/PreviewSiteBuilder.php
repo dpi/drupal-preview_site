@@ -218,7 +218,7 @@ class PreviewSiteBuilder implements ContainerInjectionInterface {
    * Batch callback.
    */
   public static function operationMarkDeploymentStarted(int $build_id, array &$context) {
-    if (!isset($context['sandbox']['clean_up_files'])) {
+    if (!isset($context['sandbox']['clean_up_file_ids'])) {
       $context['sandbox']['clean_up_file_ids'] = PreviewSiteBuild::load($build_id)->startDeployment(\Drupal::state());
       $context['sandbox']['total'] = count($context['sandbox']['clean_up_file_ids']);
     }
