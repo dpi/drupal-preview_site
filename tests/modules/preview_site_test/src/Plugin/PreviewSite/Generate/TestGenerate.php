@@ -2,7 +2,7 @@
 
 namespace Drupal\preview_site_test\Plugin\PreviewSite\Generate;
 
-use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItemInterface;
+use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 use Drupal\Core\Queue\QueueInterface;
 use Drupal\preview_site\Entity\PreviewSiteBuildInterface;
 use Drupal\preview_site\Generate\FileCollection;
@@ -36,7 +36,7 @@ class TestGenerate extends GeneratePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function generateBuildForItem(PreviewSiteBuildInterface $build, EntityReferenceItemInterface $item, string $base_url, QueueInterface $asset_queue): FileCollection {
+  public function generateBuildForItem(PreviewSiteBuildInterface $build, EntityReferenceItem $item, string $base_url, QueueInterface $asset_queue): FileCollection {
     $collection = new FileCollection();
     foreach (array_slice($this->getTestFiles('html'), 0, 2) as $file) {
       $collection->addFile(FileHelper::createFromExistingFile($file->uri));
