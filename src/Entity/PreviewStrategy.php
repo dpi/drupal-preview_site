@@ -66,14 +66,14 @@ class PreviewStrategy extends ConfigEntityBundleBase implements PreviewStrategyI
    *
    * @var string
    */
-  protected ?string $id = NULL;
+  protected $id = NULL;
 
   /**
    * The entity label.
    *
    * @var string
    */
-  protected ?string $label = NULL;
+  protected $label = NULL;
 
   /**
    * Deploy plugin ID.
@@ -82,7 +82,7 @@ class PreviewStrategy extends ConfigEntityBundleBase implements PreviewStrategyI
    *
    * @var string
    */
-  protected ?string $deploy = NULL;
+  protected $deploy = NULL;
 
   /**
    * Generate plugin ID.
@@ -91,35 +91,35 @@ class PreviewStrategy extends ConfigEntityBundleBase implements PreviewStrategyI
    *
    * @var string
    */
-  protected ?string $generate = NULL;
+  protected $generate = NULL;
 
   /**
    * Holds the plugin collection for the deploy plugin.
    *
    * @var \Drupal\Core\Plugin\DefaultSingleLazyPluginCollection|null
    */
-  protected ?DefaultSingleLazyPluginCollection $deployCollection = NULL;
+  protected $deployCollection = NULL;
 
   /**
    * Holds the plugin collection for the generate plugin.
    *
    * @var \Drupal\Core\Plugin\DefaultSingleLazyPluginCollection|null
    */
-  protected ?DefaultSingleLazyPluginCollection $generateCollection = NULL;
+  protected $generateCollection = NULL;
 
   /**
    * Deploy settings.
    *
    * @var array
    */
-  protected array $deploySettings = [];
+  protected $deploySettings = [];
 
   /**
    * Generate settings.
    *
    * @var array
    */
-  protected array $generateSettings = [];
+  protected $generateSettings = [];
 
   /**
    * {@inheritdoc}

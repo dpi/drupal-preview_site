@@ -21,14 +21,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class Generate extends QueueWorkerBase implements ContainerFactoryPluginInterface {
 
   /**
+   * Entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected EntityTypeManagerInterface $entityTypeManager;
+  protected $entityTypeManager;
 
   /**
+   * Logger.
+   *
    * @var \Drupal\Core\Logger\LoggerChannelInterface
    */
-  protected LoggerChannelInterface $log;
+  protected $log;
 
   /**
    * Queue factory.

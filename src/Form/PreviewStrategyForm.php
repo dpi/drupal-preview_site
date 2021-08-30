@@ -7,8 +7,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\preview_site\Deploy\DeployPluginManager;
-use Drupal\preview_site\Generate\GeneratePluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -20,14 +18,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class PreviewStrategyForm extends EntityForm {
 
   /**
+   * Plugin manager.
+   *
    * @var \Drupal\preview_site\Generate\GeneratePluginManager
    */
-  protected GeneratePluginManager $generatePluginManager;
+  protected $generatePluginManager;
 
   /**
+   * Plugin manager.
+   *
    * @var \Drupal\preview_site\Deploy\DeployPluginManager
    */
-  protected DeployPluginManager $deployPluginManager;
+  protected $deployPluginManager;
 
   /**
    * {@inheritdoc}

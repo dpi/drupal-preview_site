@@ -14,9 +14,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class PreviewSiteBuildQueueWorkerDeriver extends DeriverBase implements ContainerDeriverInterface {
 
   /**
+   * Entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected EntityTypeManagerInterface $entityTypeManager;
+  protected $entityTypeManager;
 
   /**
    * Constructs a new GenerateQueueWorkerDeriver.

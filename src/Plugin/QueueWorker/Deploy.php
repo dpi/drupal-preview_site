@@ -19,9 +19,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class Deploy extends QueueWorkerBase implements ContainerFactoryPluginInterface {
 
   /**
+   * Entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected EntityTypeManagerInterface $entityTypeManager;
+  protected $entityTypeManager;
 
   /**
    * Constructs a new Generate.

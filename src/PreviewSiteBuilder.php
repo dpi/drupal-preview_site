@@ -23,14 +23,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class PreviewSiteBuilder implements ContainerInjectionInterface {
 
   /**
+   * Queue factory.
+   *
    * @var \Drupal\Core\Queue\QueueFactory
    */
-  protected QueueFactory $queueFactory;
+  protected $queueFactory;
 
   /**
+   * Queue manager.
+   *
    * @var \Drupal\Core\Queue\QueueWorkerManagerInterface
    */
-  protected QueueWorkerManagerInterface $queueManager;
+  protected $queueManager;
 
   /**
    * State.

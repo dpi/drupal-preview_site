@@ -19,14 +19,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class PreviewSiteBuildDeployForm extends ContentEntityConfirmFormBase {
 
   /**
+   * Entity.
+   *
    * @var \Drupal\preview_site\Entity\PreviewSiteBuildInterface
    */
   protected $entity;
 
   /**
+   * Builder.
+   *
    * @var \Drupal\preview_site\PreviewSiteBuilder
    */
-  protected PreviewSiteBuilder $builder;
+  protected $builder;
 
   /**
    * State.
