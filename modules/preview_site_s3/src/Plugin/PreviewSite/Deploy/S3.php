@@ -183,9 +183,17 @@ class S3 extends DeployPluginBase implements ContainerFactoryPluginInterface {
    * {@inheritdoc}
    */
   public function getDeploymentBaseUri(PreviewSiteBuildInterface $build): ?string {
-    return sprintf('https://%s/%s/', $this->configuration['domain'], $this->token->replace($this->configuration['naming'], [
+    $token_data = [
       'preview_site_build' => $build,
-    ], ['clean' => TRUE]));
+    ];
+    $token_options = [
+      'clean' => TRUE,
+    ];
+    return sprintf(
+      'https://%s/%s/',
+      $this->token->replace($this->configuration['domain'], $token_data, $token_options),
+      $this->token->replace($this->configuration['naming'], $token_data, $token_options)
+    );
   }
 
   /**

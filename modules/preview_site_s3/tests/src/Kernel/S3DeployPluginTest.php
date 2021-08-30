@@ -43,7 +43,7 @@ class S3DeployPluginTest extends PreviewSiteKernelTestBase {
    * Tests S3 deploy plugin.
    */
   public function testS3DeployPlugin() {
-    $domain = sprintf('https://%s.com', $this->randomMachineName());
+    $domain = sprintf('%s.com', $this->randomMachineName());
     $key = $this->randomMachineName();
     $secret = $this->randomMachineName();
     $region = $this->randomMachineName();
@@ -59,7 +59,7 @@ class S3DeployPluginTest extends PreviewSiteKernelTestBase {
         'secret' => $secret,
         'region' => $region,
         'naming' => '[preview_site_build:uuid:value]',
-        'domain' => $domain,
+        'domain' => '[preview_site_build:uuid:value].' . $domain,
       ],
     ]);
     $strategy->save();
@@ -94,6 +94,7 @@ class S3DeployPluginTest extends PreviewSiteKernelTestBase {
       $keys[] = $item[0]['Key'];
     }
     $this->assertEquals($file_keys, array_reverse($keys));
+    $this->assertStringContainsString(sprintf('%s.%s', $build->uuid(), $domain), $strategy->getDeployPlugin()->getDeploymentBaseUri($build));
   }
 
   /**
