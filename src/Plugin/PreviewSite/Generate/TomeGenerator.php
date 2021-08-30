@@ -196,7 +196,7 @@ class TomeGenerator extends GeneratePluginBase {
 
     foreach ($remaining_assets as $asset) {
       $asset_destination = $this->static->getDestination($asset);
-      if (substr($asset_destination, -1 * strlen('/index.html')) === '/index.html') {
+      if (substr($asset_destination, -1 * strlen('/index.html')) === '/index.html' && !preg_match('@^/media/oembed\?@', $asset)) {
         // We don't want to crawl the site for other content, we only want to
         // get CSS, Javascript, images etc.
         continue;
