@@ -291,6 +291,8 @@ class TomeGenerator extends GeneratePluginBase {
       if (!$dependant_entity_type->entityClassImplements(ContentEntityInterface::class)) {
         continue;
       }
+      // Prevent recursion.
+      $seen->offsetSet($entity, FALSE);
       foreach ($entityTypeManager->getStorage($entity_type_id)->loadMultiple($entity_ids) as $dependant_entity) {
         if ($this->hasRelatedUsage($build, $dependant_entity, $seen, $entityTypeManager)) {
           $seen->offsetSet($entity, TRUE);

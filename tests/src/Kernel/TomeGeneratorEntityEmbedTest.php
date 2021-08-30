@@ -171,6 +171,8 @@ class TomeGeneratorEntityEmbedTest extends TomeGeneratorParagraphTest {
     // There is a static-cache entry from entity-usage when the block was
     // created.
     \Drupal::entityTypeManager()->getStorage('block_content')->resetCache();
+    // Artificially generate a circular entity-usage reference.
+    \Drupal::service('entity_usage.usage')->registerUsage($node->id(), 'node', $block->id(), 'block_content', $block->language()->getId(), $block->getRevisionId(), 'entity_reference', '_dummy');
     $this->genererateAndDeployBuild($build);
     $build = PreviewSiteBuild::load($build->id());
     $this->assertFalse($build->get('artifacts')->isEmpty());
