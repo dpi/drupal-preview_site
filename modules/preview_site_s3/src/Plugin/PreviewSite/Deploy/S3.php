@@ -175,7 +175,9 @@ class S3 extends DeployPluginBase implements ContainerFactoryPluginInterface {
       $build->addLogEntry(sprintf('ERROR: Could not deploy %s: %s', $file->getFileUri(), $e->getMessage()));
     }
     finally {
-      fclose($resource);
+      if (is_resource($resource)) {
+        fclose($resource);
+      }
     }
   }
 
