@@ -250,7 +250,9 @@ class TomeGenerator extends GeneratePluginBase {
    *   TRUE if is available.
    */
   protected function entityIsRelevantToBuild(PreviewSiteBuildInterface $build, ContentEntityInterface $entity, EntityTypeManagerInterface $entityTypeManager): bool {
-    return !empty($build->getMatchingContents([$entity->id()], $entity->getEntityTypeId())) || $this->hasRelatedUsage($build, $entity, new \SplObjectStorage(), $entityTypeManager);
+    $stack = new \SplObjectStorage();
+    $stack->offsetSet($this, 0);
+    return !empty($build->getMatchingContents([$entity->id()], $entity->getEntityTypeId())) || $this->hasRelatedUsage($build, $entity, $stack, $entityTypeManager);
   }
 
   /**
@@ -294,6 +296,13 @@ class TomeGenerator extends GeneratePluginBase {
       // Prevent recursion.
       $seen->offsetSet($entity, FALSE);
       foreach ($entityTypeManager->getStorage($entity_type_id)->loadMultiple($entity_ids) as $dependant_entity) {
+        $depth = $seen->offsetGet($this);
+        if ($depth >= 10) {
+          // Prevent nesting deeper than 10 layers.
+          $seen->offsetSet($entity, FALSE);
+          return FALSE;
+        }
+        $seen->offsetSet($this, $depth + 1);
         if ($this->hasRelatedUsage($build, $dependant_entity, $seen, $entityTypeManager)) {
           $seen->offsetSet($entity, TRUE);
           return TRUE;
