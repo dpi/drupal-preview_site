@@ -20,3 +20,11 @@ preview_site.strategy.*:
     generateSettings:
       type: 'preview_site.strategy.generate_settings.[%parent.generate]'
       label: 'Generate settings'
+
+preview_site.strategy.deploy_settings.preview_site_public:
+  type: mapping
+  label: 'Settings'
+  mapping:
+    naming:
+      type: string
+      label: 'Naming'
