@@ -91,7 +91,7 @@ class TestDeploy extends DeployPluginBase {
    * {@inheritdoc}
    */
   public function getDeploymentBaseUri(PreviewSiteBuildInterface $build): ?string {
-    return sprintf('https://example.com/%s/index.html', $this->configuration['prefix']);
+    return sprintf('https://example.com/%s/', $this->configuration['prefix']);
   }
 
   /**
@@ -108,6 +108,13 @@ class TestDeploy extends DeployPluginBase {
   public function deletePreviewSiteBuild(PreviewSiteBuildInterface $build): void {
     parent::deletePreviewSiteBuild($build);
     $this->state->set(self::DELETE_STEP, TRUE);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function alterUrlToDeployedItem(string $url, PreviewSiteBuildInterface $build): string {
+    return $this->getDeploymentBaseUri($build) . $url;
   }
 
 }

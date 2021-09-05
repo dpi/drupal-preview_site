@@ -5,19 +5,23 @@ namespace Drupal\preview_site\Entity;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\RevisionLogEntityTrait;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Queue\QueueInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
 use Drupal\file\FileInterface;
 use Drupal\file\Plugin\Field\FieldType\FileItem;
 use Drupal\preview_site\Deploy\DeployPluginInterface;
 use Drupal\preview_site\Generate\GeneratePluginInterface;
 use Drupal\preview_site\Generate\GenerationInProgressException;
+use Drupal\preview_site\Plugin\PreviewSitePluginInterface;
 use Drupal\user\EntityOwnerTrait;
 
 /**
@@ -523,6 +527,39 @@ class PreviewSiteBuild extends ContentEntityBase implements PreviewSiteBuildInte
       }
       yield $item->entity;
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getItemLinks(): array {
+    $links = [];
+    $processors = array_filter([
+      $this->getGeneratePlugin(),
+      $this->getDeployPlugin(),
+    ]);
+    foreach ($this->get('contents') as $delta => $item) {
+      if (!($entity = $item->entity)) {
+        continue;
+      }
+      assert($entity instanceof EntityInterface);
+      try {
+        $url = $entity->toUrl()->toString();
+        foreach ($processors as $processor) {
+          assert($processor instanceof PreviewSitePluginInterface);
+          $url = $processor->alterUrlToDeployedItem($url, $this);
+        }
+        $links[sprintf('item_%s', $delta)] = [
+          'weight' => $delta,
+          'title' => $entity->label(),
+          'url' => Url::fromUri($url),
+        ];
+      }
+      catch (\Exception $e) {
+        continue;
+      }
+    }
+    return $links;
   }
 
 }

@@ -232,4 +232,13 @@ interface PreviewSiteBuildInterface extends ContentEntityInterface, EntityChange
    */
   public function getArtifacts() : \Generator;
 
+  /**
+   * Gets item links for a deployed site.
+   *
+   * @return array
+   *   Item links. Each must have a title, weight and url key like entity
+   *   operations.
+   */
+  public function getItemLinks(): array;
+
 }

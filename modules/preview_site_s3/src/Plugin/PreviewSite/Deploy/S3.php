@@ -248,4 +248,21 @@ class S3 extends DeployPluginBase implements ContainerFactoryPluginInterface {
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function alterUrlToDeployedItem(string $url, PreviewSiteBuildInterface $build): string {
+    $token_data = [
+      'preview_site_build' => $build,
+    ];
+    $token_options = [
+      'clean' => TRUE,
+    ];
+    return sprintf(
+      'https://%s/%s',
+      $this->token->replace($this->configuration['domain'], $token_data, $token_options),
+      trim($url, '/')
+    );
+  }
+
 }

@@ -35,4 +35,11 @@ abstract class DeployPluginBase extends PluginBase implements DeployPluginInterf
     // nil-op.
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function alterUrlToDeployedItem(string $url, PreviewSiteBuildInterface $build): string {
+    return trim($this->getDeploymentBaseUri($build), '/') . '/' . $url;
+  }
+
 }

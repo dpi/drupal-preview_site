@@ -2,27 +2,14 @@
 
 namespace Drupal\preview_site\Deploy;
 
-use Drupal\Component\Plugin\ConfigurableInterface;
-use Drupal\Component\Plugin\DependentPluginInterface;
-use Drupal\Component\Plugin\PluginInspectionInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Plugin\PluginFormInterface;
-use Drupal\Core\Plugin\PluginWithFormsInterface;
 use Drupal\file\FileInterface;
 use Drupal\preview_site\Entity\PreviewSiteBuildInterface;
+use Drupal\preview_site\Plugin\PreviewSitePluginInterface;
 
 /**
  * Defines an interface for preview site deploy plugins.
  */
-interface DeployPluginInterface extends ConfigurableInterface, PluginInspectionInterface, PluginWithFormsInterface, PluginFormInterface, DependentPluginInterface, ContainerFactoryPluginInterface {
-
-  /**
-   * Gets the plugin title.
-   *
-   * @return string
-   *   Plugin title.
-   */
-  public function getTitle() : string;
+interface DeployPluginInterface extends PreviewSitePluginInterface {
 
   /**
    * Deploys an artifact.

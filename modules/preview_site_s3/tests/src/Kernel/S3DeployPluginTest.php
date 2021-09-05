@@ -217,4 +217,40 @@ class S3DeployPluginTest extends PreviewSiteKernelTestBase {
     ];
   }
 
+  /**
+   * Tests ::alterUrlToDeployedItem().
+   */
+  public function testAlterUrlToDeployedItem(): void {
+    $domain = sprintf('%s.com', $this->randomMachineName());
+    $key = $this->randomMachineName();
+    $secret = $this->randomMachineName();
+    $region = $this->randomMachineName();
+    $bucket = $this->randomMachineName();
+    $strategy = PreviewStrategy::create([
+      'id' => $this->randomMachineName(),
+      'generate' => 'test',
+      'deploy' => 'preview_site_s3',
+      'generateSettings' => [],
+      'deploySettings' => [
+        'bucket' => $bucket,
+        'key' => $key,
+        'secret' => $secret,
+        'region' => $region,
+        'naming' => '[preview_site_build:uuid:value]',
+        'domain' => '[preview_site_build:uuid:value].' . $domain,
+      ],
+    ]);
+    $strategy->save();
+    $entity = EntityTest::create([
+      'label' => $this->randomMachineName(),
+    ]);
+    $entity->save();
+    $build = $this->createPreviewSiteBuild([
+      'strategy' => $strategy->id(),
+      'contents' => $entity,
+    ]);
+    $build->save();
+    $this->assertEquals('https://' . $build->uuid() . '.' . $domain . '/' . trim($entity->toUrl()->toString(), '/'), $build->getDeployPlugin()->alterUrlToDeployedItem($entity->toUrl()->toString(), $build));
+  }
+
 }

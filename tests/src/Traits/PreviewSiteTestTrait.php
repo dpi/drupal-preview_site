@@ -49,7 +49,7 @@ trait PreviewSiteTestTrait {
       'deploy' => 'test',
       'generateSettings' => [],
       'deploySettings' => [
-        'prefix' => $prefix,
+        'prefix' => $prefix ?: $this->randomMachineName(),
       ],
     ]);
     $strategy->save();

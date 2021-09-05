@@ -3,6 +3,7 @@
 namespace Drupal\Tests\preview_site\Kernel;
 
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Url;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\entity_test\Entity\EntityTest;
 use Drupal\file\Entity\File;
@@ -311,6 +312,24 @@ class PreviewSiteBuildEntityTest extends PreviewSiteKernelTestBase {
       return $file->uuid();
     };
     $this->assertEquals(array_map($get_uuids, $files), array_map($get_uuids, $artifacts));
+  }
+
+  /**
+   * Tests ::getItemLinks.
+   */
+  public function testGetItemLinks() {
+    $entity = $this->createTerm($this->createVocabulary());
+    $build = $this->createPreviewSiteBuild([
+      'contents' => $entity,
+      'status' => PreviewSiteBuildInterface::STATUS_BUILT,
+    ]);
+    $this->assertEquals([
+      'item_0' => [
+        'title' => $entity->label(),
+        'weight' => 0,
+        'url' => Url::fromUri($build->getDeploymentBaseUri() . $build->uuid() . $entity->toUrl()->toString() . '/index.html'),
+      ],
+    ], $build->getItemLinks());
   }
 
 }

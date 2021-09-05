@@ -2,36 +2,23 @@
 
 namespace Drupal\preview_site\Generate;
 
-use Drupal\Component\Plugin\ConfigurableInterface;
-use Drupal\Component\Plugin\DependentPluginInterface;
-use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Database\Query\AlterableInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Plugin\PluginFormInterface;
-use Drupal\Core\Plugin\PluginWithFormsInterface;
 use Drupal\Core\Queue\QueueInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\preview_site\Entity\PreviewSiteBuildInterface;
+use Drupal\preview_site\Plugin\PreviewSitePluginInterface;
 
 /**
  * Defines an interface for preview site generate plugins.
  */
-interface GeneratePluginInterface extends ConfigurableInterface, PluginInspectionInterface, PluginWithFormsInterface, PluginFormInterface, DependentPluginInterface, ContainerFactoryPluginInterface {
+interface GeneratePluginInterface extends PreviewSitePluginInterface {
 
   const PARENT_NEGOTIATION_HANDLER = 'preview_site_parent';
-
-  /**
-   * Gets the plugin title.
-   *
-   * @return string
-   *   Plugin title.
-   */
-  public function getTitle() : string;
 
   /**
    * Generates a build.

@@ -358,4 +358,11 @@ class TomeGenerator extends GeneratePluginBase {
     return 'private://preview-site/' . $build->uuid();
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function alterUrlToDeployedItem(string $url, PreviewSiteBuildInterface $build): string {
+    return $url . '/index.html';
+  }
+
 }

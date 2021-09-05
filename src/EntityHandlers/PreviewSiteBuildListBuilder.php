@@ -26,8 +26,8 @@ class PreviewSiteBuildListBuilder extends EntityListBuilder {
       $this->t('Label'),
       $this->t('Strategy'),
       $this->t('Status'),
-      $this->t('Items'),
-      $this->t('URL'),
+      $this->t('Item count'),
+      $this->t('Item links'),
     ] + parent::buildHeader();
   }
 
@@ -35,15 +35,34 @@ class PreviewSiteBuildListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    /** @var \Drupal\preview_site\Entity\PreviewSiteBuildInterface $entity */
-    $deployment_uri = $entity->getDeploymentBaseUri();
+    assert($entity instanceof PreviewSiteBuildInterface);
     return [
       $entity->toLink(),
       $entity->getStrategyLabel(),
       $entity->getStatus(),
       $entity->getItemCount(),
-      $deployment_uri ? Link::fromTextAndUrl(new TranslatableMarkup('View site'), Url::fromUri($deployment_uri)) : '',
+      ['data' => $this->buildItemLinks($entity)],
     ] + parent::buildRow($entity);
+  }
+
+  /**
+   * Gets item links.
+   *
+   * @param \Drupal\preview_site\Entity\PreviewSiteBuildInterface $build
+   *   Build.
+   *
+   * @return string[]
+   *   Links to the build items.
+   */
+  protected function buildItemLinks(PreviewSiteBuildInterface $build): array {
+    $deployment_uri = $build->getDeploymentBaseUri();
+    if (!$deployment_uri) {
+      return ['#markup' => ''];
+    }
+    return [
+      '#type' => 'operations',
+      '#links' => $build->getItemLinks(),
+    ];
   }
 
   /**

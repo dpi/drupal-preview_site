@@ -4,6 +4,7 @@ namespace Drupal\preview_site\Plugin;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\PluginWithFormsTrait;
+use Drupal\preview_site\Entity\PreviewSiteBuildInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -60,7 +61,6 @@ trait PreviewSitePluginTrait {
    */
   public function calculateDependencies() {
     return [];
-
   }
 
   /**
@@ -82,6 +82,13 @@ trait PreviewSitePluginTrait {
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     // Nil-op.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function alterUrlToDeployedItem(string $url, PreviewSiteBuildInterface $build): string {
+    return $url;
   }
 
 }

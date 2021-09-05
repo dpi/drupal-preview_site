@@ -86,4 +86,11 @@ class TestGenerate extends GeneratePluginBase {
     return 'public://';
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function alterUrlToDeployedItem(string $url, PreviewSiteBuildInterface $build): string {
+    return $build->uuid() . $url . '/index.html';
+  }
+
 }
