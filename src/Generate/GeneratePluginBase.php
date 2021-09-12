@@ -57,7 +57,7 @@ abstract class GeneratePluginBase extends PluginBase implements GeneratePluginIn
       $revision_ids[] = $storage->getLatestRevisionId($entity_id);
     }
     $entities = [];
-    foreach ($storage->loadMultipleRevisions($revision_ids) as $revision) {
+    foreach ($storage->loadMultipleRevisions(array_filter($revision_ids)) as $revision) {
       $entities[$revision->id()] = $revision;
     }
     return $entities;
