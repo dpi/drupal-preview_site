@@ -148,23 +148,18 @@ class PreviewSiteBuildEntityTest extends PreviewSiteKernelTestBase {
    * Tests starting deployment.
    */
   public function testStartingDeployment() {
-    $file = $this->getTestFile();
-    $build = $this->createPreviewSiteBuild([
-      'artifacts' => $file->id(),
-    ]);
+    $build = $this->createPreviewSiteBuild();
     $state = \Drupal::state();
 
     $this->assertNull($state->get(PreviewSiteBuildInterface::BUILDING_STATE_KEY));
     $this->assertNull($state->get(TestGenerate::PREPARE_STEP));
-    $file_ids = $build->startDeployment($state);
+    $build->startDeployment($state);
     $this->assertTrue($build->get('artifacts')->isEmpty());
     $this->assertTrue($build->get('processed_paths')->isEmpty());
     $this->assertEquals('Starting deployment', $build->log->value);
     $this->assertEquals(PreviewSiteBuildInterface::STATUS_BUILDING, $build->getStatus());
     $this->assertEquals($build->uuid(), $state->get(PreviewSiteBuildInterface::BUILDING_STATE_KEY));
     $this->assertTrue($state->get(TestGenerate::PREPARE_STEP));
-    $this->assertEquals([$file->id()], $file_ids);
-
     $this->expectException(GenerationInProgressException::class);
     $build->startDeployment($state);
   }
@@ -174,12 +169,16 @@ class PreviewSiteBuildEntityTest extends PreviewSiteKernelTestBase {
    */
   public function testFinishDeployment() {
     $state = \Drupal::state();
-    $build = $this->createPreviewSiteBuild();
+    $file = $this->getTestFile();
+    $build = $this->createPreviewSiteBuild([
+      'artifacts' => $file->id(),
+    ]);
     $time = $this->prophesize(TimeInterface::class);
     $now = time();
     $time->getCurrentTime()->willReturn($now);
     $this->container->set('datetime.time', $time->reveal());
-    $build->finishDeployment($state);
+    $return = $build->finishDeployment($state)->getArtifactIds();
+    $this->assertEquals([$file->id()], $return);
     $this->assertNull($state->get(PreviewSiteBuildInterface::BUILDING_STATE_KEY));
     $this->assertEquals(PreviewSiteBuildInterface::STATUS_BUILT, $build->getStatus());
     $this->assertEquals($now, $build->deployed->value);

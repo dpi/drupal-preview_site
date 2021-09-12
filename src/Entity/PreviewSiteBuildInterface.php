@@ -79,8 +79,18 @@ interface PreviewSiteBuildInterface extends ContentEntityInterface, EntityChange
    *
    * @param \Drupal\Core\State\StateInterface $state
    *   State service.
+   *
+   * @return $this
    */
   public function finishDeployment(StateInterface $state) : PreviewSiteBuildInterface;
+
+  /**
+   * Gets the artifact IDs.
+   *
+   * @return array
+   *   File IDs for build artifacts.
+   */
+  public function getArtifactIds(): array;
 
   /**
    * Starts deployment.

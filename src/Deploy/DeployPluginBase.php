@@ -42,4 +42,11 @@ abstract class DeployPluginBase extends PluginBase implements DeployPluginInterf
     return trim($this->getDeploymentBaseUri($build), '/') . '/' . $url;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function completeDeployment(PreviewSiteBuildInterface $build): void {
+    // nil-op.
+  }
+
 }

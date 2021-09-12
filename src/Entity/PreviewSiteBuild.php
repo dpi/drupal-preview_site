@@ -341,9 +341,8 @@ class PreviewSiteBuild extends ContentEntityBase implements PreviewSiteBuildInte
       throw new GenerationInProgressException(sprintf('Preview site ID %s is currently being built, only one site can be built at a time.', $uuid));
     }
     $this->log = NULL;
-    $file_ids = array_column($this->get('artifacts')->getValue(), 'target_id');
-    $this->artifacts = NULL;
     $this->processed_paths = NULL;
+    $this->artifacts = NULL;
     $this->status = self::STATUS_BUILDING;
     $this->addLogEntry('Starting deployment', FALSE);
     $state->set(self::BUILDING_STATE_KEY, $this->uuid());
@@ -351,7 +350,7 @@ class PreviewSiteBuild extends ContentEntityBase implements PreviewSiteBuildInte
     if (($strategy = $this->getStrategy()) && $generate = $strategy->getGeneratePlugin()) {
       $generate->prepareBuild($this, $this->getDeploymentBaseUri());
     }
-    return $file_ids;
+    return $this->getArtifactIds();
   }
 
   /**
@@ -363,7 +362,19 @@ class PreviewSiteBuild extends ContentEntityBase implements PreviewSiteBuildInte
     $this->deployed = \Drupal::time()->getCurrentTime();
     $this->addLogEntry('Finishing deployment', FALSE);
     $this->save();
+    if ($deploy = $this->getDeployPlugin()) {
+      $deploy->completeDeployment($this);
+    }
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getArtifactIds(): array {
+    return array_map(function (FileInterface $file) {
+      return $file->id();
+    }, iterator_to_array($this->getArtifacts()));
   }
 
   /**

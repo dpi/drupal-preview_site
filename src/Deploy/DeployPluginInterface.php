@@ -48,4 +48,12 @@ interface DeployPluginInterface extends PreviewSitePluginInterface {
    */
   public function deletePreviewSiteBuild(PreviewSiteBuildInterface $build) : void;
 
+  /**
+   * Completes a deployment.
+   *
+   * @param \Drupal\preview_site\Entity\PreviewSiteBuildInterface $build
+   *   Build.
+   */
+  public function completeDeployment(PreviewSiteBuildInterface $build): void;
+
 }

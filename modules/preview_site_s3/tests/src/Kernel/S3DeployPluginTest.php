@@ -78,15 +78,14 @@ class S3DeployPluginTest extends PreviewSiteKernelTestBase {
       ]),
       ],
     ]);
-    $this->genererateAndDeployBuild($build);
+    $results = $this->genererateAndDeployBuild($build);
     $build = PreviewSiteBuild::load($build->id());
     $this->assertFalse($build->get('artifacts')->isEmpty());
     $this->assertEquals($build->get('artifacts')->count(), $stack->count());
     $first = $stack->top();
     $args = reset($first);
     $this->assertEquals($bucket, $args['Bucket']);
-    foreach ($build->get('artifacts') as $item) {
-      $file = $item->entity;
+    foreach ($results['files'] as $file) {
       $file_keys[] = sprintf('%s/%s', $build->uuid(), FileHelper::getFilePathWithoutSchema($file, $build));
     }
     $stack->rewind();
@@ -135,13 +134,13 @@ class S3DeployPluginTest extends PreviewSiteKernelTestBase {
       ]),
       ],
     ]);
-    $this->genererateAndDeployBuild($build);
+    $results = $this->genererateAndDeployBuild($build);
     $build = PreviewSiteBuild::load($build->id());
     $this->assertFalse($build->get('artifacts')->isEmpty());
     $logs = array_filter(array_column($build->get('log')->getValue(), 'value'), function ($item) {
       return strpos($item, 'ERROR:') === 0;
     });
-    $first_file = $build->get('artifacts')->entity;
+    $first_file = reset($results['files']);
     $this->assertEquals(sprintf('ERROR: Could not deploy %s: Whoops', $first_file->getFileUri()), reset($logs));
   }
 

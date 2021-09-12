@@ -201,14 +201,7 @@ class PreviewSiteBuilderTest extends PreviewSiteKernelTestBase {
    * Tests mark deployment started operation.
    */
   public function testOperationMarkDeploymentStarted() {
-    $file1 = $this->getTestFile();
-    $file2 = $this->getTestFile('image');
-    $build = $this->createPreviewSiteBuild([
-      'artifacts' => [
-        $file1,
-        $file2,
-      ],
-    ]);
+    $build = $this->createPreviewSiteBuild();
     $context = [
       'finished' => 1,
       'sandbox' => [],
@@ -217,8 +210,6 @@ class PreviewSiteBuilderTest extends PreviewSiteKernelTestBase {
     $build = PreviewSiteBuild::load($build->id());
     $this->assertEquals(PreviewSiteBuildInterface::STATUS_BUILDING, $build->getStatus());
     $this->assertEquals($build->id(), $context['results']['build_id']);
-    $this->assertEquals(1, $context['finished']);
-    $this->assertEquals(2, $context['sandbox']['total']);
     $this->assertEquals('Marked deployment as building', (string) $context['message']);
   }
 
@@ -352,7 +343,14 @@ class PreviewSiteBuilderTest extends PreviewSiteKernelTestBase {
    * Tests operation mark deployment finished.
    */
   public function testOperationMarkDeploymentFinished() {
-    $build = $this->createPreviewSiteBuild();
+    $file1 = $this->getTestFile();
+    $file2 = $this->getTestFile('image');
+    $build = $this->createPreviewSiteBuild([
+      'artifacts' => [
+        $file1,
+        $file2,
+      ],
+    ]);
     $this->assertEquals(PreviewSiteBuildInterface::STATUS_PENDING, $build->getStatus());
     $context = [
       'finished' => 1,
@@ -360,6 +358,8 @@ class PreviewSiteBuilderTest extends PreviewSiteKernelTestBase {
     ];
     PreviewSiteBuilder::operationMarkDeploymentFinished($build->id(), $context);
     $this->assertEquals(PreviewSiteBuildInterface::STATUS_BUILT, PreviewSiteBuild::load($build->id())->getStatus());
+    $this->assertEquals(1, $context['finished']);
+    $this->assertEquals(2, $context['sandbox']['total']);
     $this->assertTrue(empty($context['results']['generate_errors']));
   }
 

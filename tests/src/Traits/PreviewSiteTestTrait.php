@@ -112,14 +112,16 @@ trait PreviewSiteTestTrait {
    *
    * @param \Drupal\preview_site\Entity\PreviewSiteBuildInterface $build
    *   Build.
+   * @param array $files
+   *   Array files.
    *
    * @return array
    *   Artifact URIs.
    */
-  protected function getArtifactUris(PreviewSiteBuildInterface $build): array {
-    return array_filter(array_map(function (FileItem $item) use ($build) {
-      return $item->entity ? str_replace(sprintf('private://preview-site/%s', $build->uuid()), '', $item->entity->getFileUri()) : NULL;
-    }, iterator_to_array($build->get('artifacts'))));
+  protected function getArtifactUris(PreviewSiteBuildInterface $build, array $files): array {
+    return array_map(function (string $file) use ($build) {
+      return str_replace(sprintf('private://preview-site/%s', $build->uuid()), '', $file);
+    }, $files);
   }
 
   /**

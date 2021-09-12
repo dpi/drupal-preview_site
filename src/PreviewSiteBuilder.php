@@ -222,21 +222,9 @@ class PreviewSiteBuilder implements ContainerInjectionInterface {
    * Batch callback.
    */
   public static function operationMarkDeploymentStarted(int $build_id, array &$context) {
-    if (!isset($context['sandbox']['clean_up_file_ids'])) {
-      $context['sandbox']['clean_up_file_ids'] = PreviewSiteBuild::load($build_id)->startDeployment(\Drupal::state());
-      $context['sandbox']['total'] = count($context['sandbox']['clean_up_file_ids']);
-    }
-    if ($fids = array_splice($context['sandbox']['clean_up_file_ids'], 0, 10)) {
-      $file_storage = \Drupal::entityTypeManager()->getStorage('file');
-      $file_storage->delete($file_storage->loadMultiple($fids));
-    }
-    self::updateFinishedPercent(count($context['sandbox']['clean_up_file_ids']), $context);
     $context['results']['build_id'] = $build_id;
-    if ($context['finished'] == 1) {
-      $context['message'] = new TranslatableMarkup('Marked deployment as building');
-      return;
-    }
-    $context['message'] = new TranslatableMarkup('Deleting old artifacts');
+    PreviewSiteBuild::load($build_id)->startDeployment(\Drupal::state());
+    $context['message'] = new TranslatableMarkup('Marked deployment as building');
   }
 
   /**
@@ -290,14 +278,27 @@ class PreviewSiteBuilder implements ContainerInjectionInterface {
    */
   public static function operationMarkDeploymentFinished(int $build_id, array &$context) {
     /** @var \Drupal\preview_site\Entity\PreviewSiteBuildInterface $build */
-    $build = PreviewSiteBuild::load($build_id)->finishDeployment(\Drupal::state());
-    $status = $build->getStatus();
-    $context['message'] = new TranslatableMarkup('Marked deployment as @status', [
-      '@status' => $status,
-    ]);
-    if ($status === PreviewSiteBuildInterface::STATUS_FAILED) {
-      $context['results']['generate_errors'] = TRUE;
+    $build = PreviewSiteBuild::load($build_id);
+    if (!isset($context['sandbox']['clean_up_file_ids'])) {
+      $context['sandbox']['clean_up_file_ids'] = $build->finishDeployment(\Drupal::state())->getArtifactIds();
+      $context['sandbox']['total'] = count($context['sandbox']['clean_up_file_ids']);
     }
+    if ($fids = array_splice($context['sandbox']['clean_up_file_ids'], 0, 10)) {
+      $file_storage = \Drupal::entityTypeManager()->getStorage('file');
+      $file_storage->delete($file_storage->loadMultiple($fids));
+    }
+    self::updateFinishedPercent(count($context['sandbox']['clean_up_file_ids']), $context);
+    if ($context['finished'] == 1) {
+      $status = $build->getStatus();
+      $context['message'] = new TranslatableMarkup('Marked deployment as @status', [
+        '@status' => $status,
+      ]);
+      if ($status === PreviewSiteBuildInterface::STATUS_FAILED) {
+        $context['results']['generate_errors'] = TRUE;
+      }
+      return;
+    }
+    $context['message'] = new TranslatableMarkup('Deleting old artifacts');
   }
 
   /**

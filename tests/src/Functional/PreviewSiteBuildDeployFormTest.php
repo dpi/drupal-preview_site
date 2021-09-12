@@ -173,7 +173,7 @@ class PreviewSiteBuildDeployFormTest extends BrowserTestBase {
     $assert->pageTextNotContains($published_text);
 
     $css_file = $assert->elementExists('css', 'link[rel=stylesheet]')->getAttribute('href');
-    $artifacts_uris = $this->getArtifactUris($build);
+    $artifacts_uris = $this->getArtifactUris($build, \Drupal::state()->get(sprintf('preview_site_build_files:%s', $build->uuid())));
     $this->assertContains(parse_url($css_file, PHP_URL_PATH), $artifacts_uris);
 
     // Check that the draft doesn't bleed into the live site.

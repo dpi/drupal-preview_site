@@ -88,8 +88,17 @@ abstract class PreviewSiteKernelTestBase extends KernelTestBase {
     do {
       PreviewSiteBuilder::operationProcessDeploy($build->id(), $context);
     } while ($context['finished'] !== 1);
-    PreviewSiteBuilder::operationMarkDeploymentFinished($build->id(), $context);
-    return $context['results'];
+    $files = [];
+    // Load back from DB to pass back the artifacts before they're deleted.
+    $build = \Drupal::entityTypeManager()->getStorage('preview_site_build')->loadUnchanged($build->id());
+    foreach ($build->get('artifacts') as $item) {
+      $files[] = $item->entity;
+    }
+    $context = $clean_batch($context);
+    do {
+      PreviewSiteBuilder::operationMarkDeploymentFinished($build->id(), $context);
+    } while ($context['finished'] !== 1);
+    return $context['results'] + ['files' => $files];
   }
 
 }

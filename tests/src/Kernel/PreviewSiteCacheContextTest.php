@@ -35,7 +35,11 @@ class PreviewSiteCacheContextTest extends PreviewSiteKernelTestBase {
     $this->assertEquals(['preview_site_build_list'], $context->getCacheableMetadata()->getCacheTags());
     $build = $this->createPreviewSiteBuild();
     $build->startDeployment(\Drupal::state());
-    $this->assertEquals(array_unique(array_merge($build->getCacheTags(), ['preview_site_build_list'])), $context->getCacheableMetadata()->getCacheTags());
+    $expected = array_unique(array_merge($build->getCacheTags(), ['preview_site_build_list']));
+    sort($expected);
+    $actual = $context->getCacheableMetadata()->getCacheTags();
+    sort($actual);
+    $this->assertEquals($expected, $actual);
   }
 
 }

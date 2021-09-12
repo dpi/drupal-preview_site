@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\preview_site\Kernel;
 
+use Drupal\file\FileInterface;
 use Drupal\node\Entity\Node;
 use Drupal\preview_site\Entity\PreviewSiteBuild;
 use Drupal\tome_static\Event\PathPlaceholderEvent;
@@ -63,7 +64,7 @@ class TomeGeneratorNodeGlobalTest extends TomeGeneratorTestBase {
       'processed_paths' => NULL,
       'log' => NULL,
     ]);
-    $this->genererateAndDeployBuild($build);
+    $results = $this->genererateAndDeployBuild($build);
     $build = PreviewSiteBuild::load($build->id());
     $this->assertFalse($build->get('artifacts')->isEmpty());
     $node_static_file = $this->getGeneratedFileForEntity($node, $build);
@@ -74,8 +75,10 @@ class TomeGeneratorNodeGlobalTest extends TomeGeneratorTestBase {
     $this->assertEquals(0, $crawler->filter(sprintf('div:contains("%s")', $published_text))->count());
 
     $css_file = $crawler->filter('link[rel=stylesheet]')->first()->attr('href');
-    $artifacts_uris = $this->getArtifactUris($build);
-    $this->assertContains(parse_url($css_file, PHP_URL_PATH), $artifacts_uris);
+    $artifacts_uris = $this->getArtifactUris($build, array_map(function (FileInterface $file) {
+      return $file->getFileUri();
+    }, $results['files']));
+    $this->assertContains(parse_url($css_file, PHP_URL_PATH), $artifacts_uris, var_export($artifacts_uris, TRUE));
 
     // Test that regeneration is possible.
     $new_draft_text = $this->getRandomGenerator()->sentences(10);

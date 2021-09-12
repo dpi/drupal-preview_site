@@ -90,6 +90,21 @@ class TestDeploy extends DeployPluginBase {
   /**
    * {@inheritdoc}
    */
+  public function completeDeployment(PreviewSiteBuildInterface $build): void {
+    $file_uris = [];
+    foreach ($build->get('artifacts') as $item) {
+      if ($file = $item->entity) {
+        assert($file instanceof FileInterface);
+        $file_uris[] = $file->getFileUri();
+      }
+    }
+    $this->state->set(sprintf('preview_site_build_files:%s', $build->uuid()), $file_uris);
+    parent::completeDeployment($build);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getDeploymentBaseUri(PreviewSiteBuildInterface $build): ?string {
     return sprintf('https://example.com/%s/', $this->configuration['prefix']);
   }

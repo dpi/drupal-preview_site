@@ -55,12 +55,15 @@ class PublicFilesDeployPluginTest extends PreviewSiteKernelTestBase {
       ]),
       ],
     ]);
+    $files = [];
+    foreach ($build->get('artifacts') as $item) {
+      $files[] = $item->entity;
+    }
     $this->genererateAndDeployBuild($build);
     $build = PreviewSiteBuild::load($build->id());
     $this->assertFalse($build->get('artifacts')->isEmpty());
     $this->assertDirectoryExists('public://preview-site/' . $build->uuid());
-    foreach ($build->get('artifacts') as $item) {
-      $file = $item->entity;
+    foreach ($files as $file) {
       $this->assertFileExists(sprintf('public://preview-site/%s/%s', $build->uuid(), FileHelper::getFilePathWithoutSchema($file, $build)));
     }
   }
