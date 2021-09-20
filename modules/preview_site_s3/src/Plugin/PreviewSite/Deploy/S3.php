@@ -228,11 +228,15 @@ class S3 extends DeployPluginBase implements ContainerFactoryPluginInterface {
     $prefix = trim($this->token->replace($this->configuration['naming'], [
       'preview_site_build' => $build,
     ], ['clean' => TRUE]), '/');
-    foreach ($build->getArtifacts() as $file) {
-      $objects[] = ['Key' => sprintf('%s/%s', $prefix, FileHelper::getFilePathWithoutSchema($file, $build))];
-    }
 
     try {
+      $response = $client->getIterator('ListObjects', [
+        'Bucket' => $this->configuration['bucket'],
+        'Prefix' => $prefix,
+      ]);
+      foreach ($response as $object) {
+        $objects[] = ['Key' => $object['Key']];
+      }
       $client->deleteObjects([
         'Bucket' => $this->configuration['bucket'],
         'Delete' => ['Objects' => $objects],

@@ -171,21 +171,29 @@ class S3DeployPluginTest extends PreviewSiteKernelTestBase {
     ]);
     $stack = new \SplStack();
     $strategy->save();
+    $file1 = $this->getTestFile();
+    $file2 = $this->getTestFile('html', 1);
     $client = $this->prophesize(S3Client::class);
+    $uuid = \Drupal::service('uuid')->generate();
+    $file_keys = [
+      ['Key' => sprintf('%s/%s', $uuid, $file1->getFilename())],
+      ['Key' => sprintf('%s/%s', $uuid, $file2->getFilename())],
+    ];
+    $client->getIterator('ListObjects', [
+      'Bucket' => $bucket,
+      'Prefix' => $uuid,
+    ])->shouldBeCalled()->willReturn($file_keys);
     $client->deleteObjects(Argument::any())->will(function ($args) use ($stack) {
       $stack->push($args);
     })->shouldBeCalled();
     $factory = $this->prophesize(S3ClientFactoryInterface::class);
     $factory->createClient($key, $secret, $region)->shouldBeCalled()->willReturn($client->reveal());
     $this->container->set('s3client.factory', $factory->reveal());
-    $files = [
-      $this->getTestFile(),
-      $this->getTestFile('html', 1),
-    ];
     $build = $this->createPreviewSiteBuild([
+      'uuid' => $uuid,
       'strategy' => $strategy->id(),
       'contents' => NULL,
-      'artifacts' => $files,
+      'artifacts' => [],
     ]);
     $build->save();
     $build->{$operation}();
@@ -193,14 +201,7 @@ class S3DeployPluginTest extends PreviewSiteKernelTestBase {
     $first = $stack->top();
     $args = reset($first);
     $this->assertEquals($bucket, $args['Bucket']);
-    foreach ($args['Delete']['Objects'] as $item) {
-      $keys[] = $item['Key'];
-    }
-    foreach ($build->get('artifacts') as $item) {
-      $file = $item->entity;
-      $file_keys[] = sprintf('%s/%s', $build->uuid(), FileHelper::getFilePathWithoutSchema($file, $build));
-    }
-    $this->assertEquals($file_keys, $keys);
+    $this->assertEquals($file_keys, $args['Delete']['Objects']);
   }
 
   /**
