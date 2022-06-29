@@ -160,6 +160,7 @@ class TomeGenerator extends GeneratePluginBase {
     $build->markPathAsProcessed($path);
     $this->static->setStaticDirectory('private://preview-site/' . $build->uuid());
     $original_params = TomeStaticHelper::setBaseUrl($request, $base_url);
+    $simulatedHostAndScheme = $request->getSchemeAndHttpHost();
 
     $this->requestPreparer->prepareForRequest();
     $this->fileSavedListener->resetLastFileWritten();
@@ -198,8 +199,10 @@ class TomeGenerator extends GeneratePluginBase {
       $asset_destination = $this->static->getDestination($asset);
       if (substr($asset_destination, -1 * strlen('/index.html')) === '/index.html' && !preg_match('@^/media/oembed\?@', $asset)) {
         // We don't want to crawl the site for other content, we only want to
-        // get CSS, Javascript, images etc.
-        continue;
+        // get CSS, Javascript, images etc, unless it is a redirect.
+        if (!$this->static->getCache()->isRedirect($simulatedHostAndScheme, $asset)) {
+          continue;
+        }
       }
       if (!$build->hasPathBeenProcessed($asset)) {
         $asset_queue->createItem($asset);

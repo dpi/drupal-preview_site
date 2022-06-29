@@ -27,3 +27,10 @@ services:
       - '@entity.repository'
     tags:
       - { name: cache.context }
+  preview_site.cache:
+    class: Drupal\preview_site\PreviewSiteCache
+    decorates: cache.tome_static
+    parent: cache.tome_static
+    arguments:
+      - '@preview_site.cache.inner'
+      - '@request_stack'

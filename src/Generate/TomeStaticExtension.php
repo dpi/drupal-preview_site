@@ -5,6 +5,7 @@ namespace Drupal\preview_site\Generate;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\Core\Site\Settings;
+use Drupal\tome_static\StaticCache;
 use Drupal\tome_static\StaticCacheInterface;
 use Drupal\tome_static\StaticGenerator;
 use Drupal\tome_static\StaticGeneratorInterface;
@@ -134,6 +135,16 @@ class TomeStaticExtension extends StaticGenerator {
    */
   public function isGenerating(): bool {
     return $this->isGenerating;
+  }
+
+  /**
+   * Get the cache.
+   *
+   * @return \Drupal\tome_static\StaticCache
+   *   The cache.
+   */
+  public function getCache(): StaticCache {
+    return $this->cache;
   }
 
 }
