@@ -2,11 +2,18 @@
 
 namespace Drupal\Tests\preview_site\Kernel;
 
+use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Core\Logger\RfcLogLevel;
 use Drupal\entity_test\Entity\EntityTest;
+use Drupal\file\FileInterface;
 use Drupal\preview_site\Entity\PreviewSiteBuild;
 use Drupal\preview_site\Entity\PreviewSiteBuildInterface;
+use Drupal\preview_site\Plugin\QueueWorker\ProcessCopiedFiles;
 use Drupal\preview_site\PreviewSiteBuilder;
 use Drupal\preview_site_test\Plugin\PreviewSite\Generate\TestGenerate;
+use Drupal\Tests\preview_site\Traits\LoggingTrait;
+use org\bovigo\vfs\vfsStream;
+use Symfony\Component\ErrorHandler\BufferingLogger;
 
 /**
  * Defines a test for preview site builder.
@@ -19,6 +26,8 @@ use Drupal\preview_site_test\Plugin\PreviewSite\Generate\TestGenerate;
  * @covers \Drupal\preview_site\Plugin\QueueWorker\GenerateAssets
  */
 class PreviewSiteBuilderTest extends PreviewSiteKernelTestBase {
+
+  use LoggingTrait;
 
   /**
    * {@inheritdoc}
@@ -133,6 +142,83 @@ class PreviewSiteBuilderTest extends PreviewSiteKernelTestBase {
   }
 
   /**
+   * @covers \Drupal\preview_site\PreviewSiteBuilder::processFileCopies
+   * @covers \Drupal\preview_site\Plugin\QueueWorker\ProcessCopiedFiles
+   */
+  public function testProcessFileCopies(): void {
+    vfsStream::setup('test', NULL, [
+      'myfile.html' => '<html><body>foo bar</body></html>',
+    ]);
+
+    $build = $this->createPreviewSiteBuild([
+      'contents' => [EntityTest::create()],
+      'artifacts' => NULL,
+    ]);
+    $queue = \Drupal::queue(sprintf('%s:%s', ProcessCopiedFiles::PLUGIN_ID, $build->id()));
+    $queue->createItem(ProcessCopiedFiles::createItem('vfs://test/myfile.html', 'vfs://test/destination.html'));
+
+    $preview_site_builder = PreviewSiteBuilder::factory();
+    $this->assertFalse(file_exists('vfs://test/destination.html'));
+    $this->assertCount(0, iterator_to_array($build->getArtifacts()));
+    $this->assertFalse($build->hasPathBeenProcessed('vfs://test/myfile.html'));
+
+    $preview_site_builder->processFileCopies($build);
+    $build = PreviewSiteBuild::load($build->id());
+    $this->assertTrue(file_exists('vfs://test/destination.html'));
+    $this->assertEquals('<html><body>foo bar</body></html>', \file_get_contents('vfs://test/destination.html'));
+    $this->assertTrue($build->hasPathBeenProcessed('vfs://test/destination.html'));
+    $artifact0 = iterator_to_array($build->getArtifacts())[0];
+    $this->assertInstanceOf(FileInterface::class, $artifact0);
+    $this->assertEquals('destination.html', $artifact0->label());
+  }
+
+  /**
+   * @covers \Drupal\preview_site\Plugin\QueueWorker\ProcessCopiedFiles
+   */
+  public function testProcessFileCopiesDirectoryCreateFailure(): void {
+    vfsStream::setup('test', 0, [
+      'myfile.html' => '<html><body>foo bar</body></html>',
+    ]);
+
+    $build = $this->createPreviewSiteBuild([
+      'contents' => [EntityTest::create()],
+      'artifacts' => NULL,
+    ]);
+    $queue = \Drupal::queue(sprintf('%s:%s', ProcessCopiedFiles::PLUGIN_ID, $build->id()));
+    $queue->createItem(ProcessCopiedFiles::createItem('vfs://test/myfile.html', 'vfs://test/destination.html'));
+
+    $preview_site_builder = PreviewSiteBuilder::factory();
+    $preview_site_builder->processFileCopies($build);
+
+    $logs = $this->getLogs();
+    $this->assertEquals('Unable to prepare directory vfs://test for writing', $logs[0]['message']);
+    $this->assertEquals(RfcLogLevel::NOTICE, $logs[0]['severity']);
+  }
+
+  /**
+   * @covers \Drupal\preview_site\Plugin\QueueWorker\ProcessCopiedFiles
+   */
+  public function testProcessFileCopiesDirectoryFileCopyFailure(): void {
+    vfsStream::setup('test', NULL, [
+      'myfile.html' => '<html><body>foo bar</body></html>',
+    ]);
+
+    $build = $this->createPreviewSiteBuild([
+      'contents' => [EntityTest::create()],
+      'artifacts' => NULL,
+    ]);
+    $queue = \Drupal::queue(sprintf('%s:%s', ProcessCopiedFiles::PLUGIN_ID, $build->id()));
+    $queue->createItem(ProcessCopiedFiles::createItem('vfs://test/file-does-not-exist.html', 'vfs://test/destination.html'));
+
+    $preview_site_builder = PreviewSiteBuilder::factory();
+    $preview_site_builder->processFileCopies($build);
+
+    $logs = $this->getLogs();
+    $this->assertEquals("File 'vfs://test/file-does-not-exist.html' could not be copied because it does not exist.", $logs[0]['message']);
+    $this->assertEquals(RfcLogLevel::ERROR, $logs[0]['severity']);
+  }
+
+  /**
    * Tests queueing the site deployment.
    */
   public function testQueueSiteDeployment() {
@@ -191,6 +277,7 @@ class PreviewSiteBuilderTest extends PreviewSiteKernelTestBase {
       [[PreviewSiteBuilder::class, 'operationQueueGenerate'], [$build->id()]],
       [[PreviewSiteBuilder::class, 'operationProcessGenerate'], [$build->id()]],
       [[PreviewSiteBuilder::class, 'operationProcessAssets'], [$build->id()]],
+      [[PreviewSiteBuilder::class, 'operationProcessFileCopies'], [$build->id()]],
       [[PreviewSiteBuilder::class, 'operationQueueDeploy'], [$build->id()]],
       [[PreviewSiteBuilder::class, 'operationProcessDeploy'], [$build->id()]],
       [[PreviewSiteBuilder::class, 'operationMarkDeploymentFinished'], [$build->id()]],
@@ -378,6 +465,25 @@ class PreviewSiteBuilderTest extends PreviewSiteKernelTestBase {
     PreviewSiteBuilder::operationMarkDeploymentFinished($build->id(), $context);
     $this->assertEquals(PreviewSiteBuildInterface::STATUS_FAILED, PreviewSiteBuild::load($build->id())->getStatus());
     $this->assertFalse(empty($context['results']['generate_errors']));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function register(ContainerBuilder $container) {
+    parent::register($container);
+    $container
+      ->register($this->testLoggerServiceName, BufferingLogger::class)
+      ->addTag('logger');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown(): void {
+    // Clean out logs so their arn't sent out to stderr.
+    $this->container->get($this->testLoggerServiceName)->cleanLogs();
+    parent::tearDown();
   }
 
 }

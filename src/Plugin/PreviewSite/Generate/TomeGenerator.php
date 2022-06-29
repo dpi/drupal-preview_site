@@ -164,7 +164,7 @@ class TomeGenerator extends GeneratePluginBase {
     $this->requestPreparer->prepareForRequest();
     $this->fileSavedListener->resetLastFileWritten();
     try {
-      $this->static->setIsGenerating(TRUE);
+      $this->static->setIsGenerating(TRUE)->setPreviewSiteBuild($build);
       $invoke_paths = $this->static->requestPath($path);
     }
     catch (\Exception $e) {
@@ -190,9 +190,8 @@ class TomeGenerator extends GeneratePluginBase {
       ));
       return new FileCollection();
     }
-    $this->static->resetCopiedPaths();
+
     $remaining_assets = $this->static->exportPaths($invoke_paths);
-    $copied_paths = $this->static->getCopiedPaths();
 
     foreach ($remaining_assets as $asset) {
       $asset_destination = $this->static->getDestination($asset);
@@ -207,17 +206,7 @@ class TomeGenerator extends GeneratePluginBase {
     }
 
     try {
-      $collection = new FileCollection(FileHelper::createFromExistingFile($destination));
-      foreach (array_unique($copied_paths) as $copied_path) {
-        // Remove any relative slashes (./) but retain ../.
-        $copied_path = preg_replace('@(?<!\.)\./@', '', $copied_path);
-        if ($build->hasPathBeenProcessed($copied_path)) {
-          continue;
-        }
-        $build->markPathAsProcessed($copied_path);
-        $collection->addFile(FileHelper::createFromExistingFile($copied_path));
-      }
-      return $collection;
+      return new FileCollection(FileHelper::createFromExistingFile($destination));
     }
     catch (CouldNotWriteFileException $e) {
       $build->addLogEntry(sprintf('ERROR: Exception caught when attempting to create file from %s: %s',
@@ -363,6 +352,10 @@ class TomeGenerator extends GeneratePluginBase {
    */
   public function alterUrlToDeployedItem(string $url, PreviewSiteBuildInterface $build): string {
     return $url . '/index.html';
+  }
+
+  public function getStatic(): \Drupal\preview_site\Generate\TomeStaticExtension {
+    return $this->static;
   }
 
 }

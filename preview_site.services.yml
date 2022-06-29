@@ -14,6 +14,7 @@ services:
       - '@cache.tome_static'
       - '@account_switcher'
       - '@file_system'
+      - '@queue'
   preview_site.tome_file_saved_listener:
     class: Drupal\preview_site\EventSubscribers\TomeStaticListener
     arguments:

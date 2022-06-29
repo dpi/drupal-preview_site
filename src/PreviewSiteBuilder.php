@@ -15,6 +15,7 @@ use Drupal\Core\StringTranslation\PluralTranslatableMarkup;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\preview_site\Entity\PreviewSiteBuild;
 use Drupal\preview_site\Entity\PreviewSiteBuildInterface;
+use Drupal\preview_site\Plugin\QueueWorker\ProcessCopiedFiles;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -134,6 +135,19 @@ class PreviewSiteBuilder implements ContainerInjectionInterface {
   }
 
   /**
+   * Processes a file copies.
+   *
+   * @param \Drupal\preview_site\Entity\PreviewSiteBuildInterface $build
+   *   Site with copies to process.
+   *
+   * @return int
+   *   Remaining items to process.
+   */
+  public function processFileCopies(PreviewSiteBuildInterface $build) : int {
+    return $this->processQueueItem(sprintf('%s:%s', ProcessCopiedFiles::PLUGIN_ID, $build->id()));
+  }
+
+  /**
    * Queues required tasks to deploy a preview site.
    *
    * @param \Drupal\preview_site\Entity\PreviewSiteBuildInterface $build
@@ -213,6 +227,7 @@ class PreviewSiteBuilder implements ContainerInjectionInterface {
       ->addOperation([self::class, 'operationQueueGenerate'], [$build->id()])
       ->addOperation([self::class, 'operationProcessGenerate'], [$build->id()])
       ->addOperation([self::class, 'operationProcessAssets'], [$build->id()])
+      ->addOperation([self::class, 'operationProcessFileCopies'], [$build->id()])
       ->addOperation([self::class, 'operationQueueDeploy'], [$build->id()])
       ->addOperation([self::class, 'operationProcessDeploy'], [$build->id()])
       ->addOperation([self::class, 'operationMarkDeploymentFinished'], [$build->id()]);
@@ -253,6 +268,16 @@ class PreviewSiteBuilder implements ContainerInjectionInterface {
     self::updateFinishedPercent($remaining, $context);
     $context['results']['assets'] = ($context['results']['assets'] ?? 0) + 1;
     $context['message'] = new PluralTranslatableMarkup($remaining, 'Generating assets for content items (1 item remaining)', 'Generating assets for content items (@count items remaining)');
+  }
+
+  /**
+   * Batch callback.
+   */
+  public static function operationProcessFileCopies(int $build_id, array &$context): void {
+    $remaining = self::factory()->processFileCopies(PreviewSiteBuild::load($build_id));
+    self::updateFinishedPercent($remaining, $context);
+    $context['results']['generated'] = ($context['results']['generated'] ?? 0) + 1;
+    $context['message'] = new PluralTranslatableMarkup($remaining, 'Processing files for generated items (1 item remaining)', 'Processing files for generated items (@count items remaining)');
   }
 
   /**
