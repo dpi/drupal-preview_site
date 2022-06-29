@@ -9,6 +9,7 @@ use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\Core\Site\Settings;
 use Drupal\preview_site\Entity\PreviewSiteBuildInterface;
 use Drupal\preview_site\Plugin\QueueWorker\ProcessCopiedFiles;
+use Drupal\tome_static\StaticCache;
 use Drupal\tome_static\StaticCacheInterface;
 use Drupal\tome_static\StaticGenerator;
 use Drupal\tome_static\StaticGeneratorInterface;
@@ -245,6 +246,16 @@ class TomeStaticExtension extends StaticGenerator {
     if (pathinfo($destination, PATHINFO_EXTENSION) === 'js') {
       yield from $this->getJavascriptModules(file_get_contents($destination), $path);
     }
+  }
+
+  /**
+   * Get the cache.
+   *
+   * @return \Drupal\tome_static\StaticCache
+   *   The cache.
+   */
+  public function getCache(): StaticCache {
+    return $this->cache;
   }
 
 }
